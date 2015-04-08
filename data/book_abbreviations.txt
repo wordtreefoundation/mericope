@@ -16,7 +16,7 @@
 14	(?:2|ii|second|2 nd) ?chronicles?	(?:2|ii|second|2 nd) ?chr?	(?:2|ii|second|2 nd) ?chro?n?
 13	(?:(?:1|i|first|1 st) ?)?chronicles?	(?:1|i|first|1 st) ?chr?	(?:1|i|first|1 st) ?chro?n?
 15	ezra?
-16	nehemiah	neh?
+16	nehemiah	neh
 17	esther	esth?	es
 18	jo?b
 19	psa?lms?	ps[as]?m?
@@ -67,3 +67,18 @@
 60	(?:(?:1|i|first|1 st) ?)?peter?	(?:1|i|first|1 st) ?pe?t?r?
 65	jude
 66	revelations?	re?v	re	revel
+68	(?:2|ii|second|2 nd) ?nephi	(?:2|ii|second|2 nd) ?ne
+67	(?:1|i|first|1 st) ?nephi	(?:1|i|first|1 st) ?ne
+69	jacob	jac
+70	enos	en
+71	jarom	jar
+72	omni	om
+73	words of mormon	wom
+74	mosiah	mosh?
+75	alma	alm?
+76	helaman	hela?
+77	(?:3|iii|third|3 rd) ?nephi	(?:3|iii|third|3 rd) ?ne
+78	(?:4|iv|fourth|4 th) ?nephi	(?:4|iv|fourth|4 th) ?ne
+79	mormon	morm
+80	ether	eth
+81	moroni	moro
