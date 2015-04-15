@@ -8,56 +8,49 @@ class Mericope
               :book_name,
               :original_string,
               :ranges
-  
-  
+
   def self.book_names
     @book_names ||= chapter_verse_count_books.
       map{ |r| r[2] }.uniq
   end
-  
+
   def self.book_name_regexes
     @book_name_regexes ||= book_abbreviations.
       map { |book_number, book_regex| [book_number, /\b#{book_regex}\b/] }
   end
-  
-  
-  
+
   def initialize(arg)
     case arg
     when String
       attributes = Mericope.match_one(arg)
       raise "no mericope found in #{arg} (#{arg.class})" if attributes.nil?
-      
+
       @original_string = attributes[:original_string]
       set_book attributes[:book]
       @ranges = attributes[:ranges]
-      
+
     when Array
       arg = arg.map(&:to_i)
       set_book Mericope.get_book(arg.first)
       @ranges = Mericope.group_array_into_ranges(arg)
-      
+
     else
       attributes = arg
       @original_string = attributes[:original_string]
       set_book attributes[:book]
       @ranges = attributes[:ranges]
-      
+
     end
   end
-  
-  
-  
+
   def self.book_has_chapters?(book)
     book_chapter_counts[book - 1] > 1
   end
-  
+
   def book_has_chapters?
     book_chapter_count > 1
   end
-  
-  
-  
+
   # Differs from Mericope.new in that it won't raise an exception
   # if text does not contain a mericope but will return nil instead.
   def self.parse_one(text)
@@ -66,9 +59,7 @@ class Mericope
     end
     nil
   end
-  
-  
-  
+
   def self.parse(text)
     mericopes = []
     match_all(text) do |attributes|
@@ -81,39 +72,37 @@ class Mericope
     end
     block_given? ? text : mericopes
   end
-  
-  
-  
+
   def self.split(text, pattern=nil)
     puts "DEPRECATION NOTICE: split will no longer accept a 'pattern' argument in Mericope 0.7.0" if pattern
     segments = []
     start = 0
-    
+
     match_all(text) do |attributes, match|
-      
+
       pretext = text.slice(start...match.begin(0))
       if pretext.length > 0
         segments << pretext
         yield pretext if block_given?
       end
-      
+
       mericope = Mericope.new(attributes)
       segments << mericope
       yield mericope if block_given?
-      
+
       start = match.end(0)
     end
-    
+
     pretext = text.slice(start...text.length)
     if pretext.length > 0
       segments << pretext
       yield pretext if block_given?
     end
-    
+
     segments = ___split_segments_by_pattern(segments, pattern) if pattern
     segments
   end
-  
+
   def self.___split_segments_by_pattern(segments, pattern)
     segments2 = []
     segments.each do |segment|
@@ -125,9 +114,7 @@ class Mericope
     end
     segments2
   end
-  
-  
-  
+
   def self.extract(text)
     puts "DEPRECATION NOTICE: the 'extract' method will be removed in Mericope 0.7.0"
     segments = split(text)
@@ -142,9 +129,7 @@ class Mericope
     end
     {:text => text, :mericopes => mericopes}
   end
-  
-  
-  
+
   def self.sub(text)
     segments = split(text)
     segments.inject("") do |text, segment|
@@ -155,31 +140,23 @@ class Mericope
       end
     end
   end
-  
-  
-  
+
   def self.rsub(text)
     text.gsub(/\{\{(\d{7,8} ?)+\}\}/) do |match|
       ids = match[2...-2].split.collect(&:to_i)
       Mericope.new(ids).to_s
     end
   end
-  
-  
-  
+
   def to_s
     "#{book_name} #{self.well_formatted_reference}"
   end
-  
-  
-  
+
   def report
     puts "DEPRECATION NOTICE: the 'report' method will be removed in Mericope 0.7.0"
     "  #{self.original_string} => #{self}"
   end
-  
-  
-  
+
   def to_a
     # one range per chapter
     chapter_ranges = []
@@ -198,12 +175,10 @@ class Mericope
         chapter_ranges << Range.new(Mericope.get_first_verse(book, max_chapter), range.end)
       end
     end
-    
+
     chapter_ranges.inject([]) {|array, range| array.concat(range.to_a)}
   end
-  
-  
-  
+
   def well_formatted_reference
     recent_chapter = nil # e.g. in 12:1-8, remember that 12 is the chapter when we parse the 8
     recent_chapter = 1 unless book_has_chapters?
@@ -213,7 +188,7 @@ class Mericope
       max_chapter = Mericope.get_chapter(range.end)
       max_verse = Mericope.get_verse(range.end)
       s = ""
-      
+
       if min_verse == 1 and max_verse >= Mericope.get_max_verse(book, max_chapter)
         s << min_chapter.to_s
         s << "-#{max_chapter}" if max_chapter > min_chapter
@@ -224,9 +199,9 @@ class Mericope
           recent_chapter = min_chapter
           s << "#{min_chapter}:#{min_verse}"
         end
-        
+
         if range.count > 1
-          
+
           s << "-"
           if min_chapter == max_chapter
             s << max_verse.to_s
@@ -236,124 +211,116 @@ class Mericope
           end
         end
       end
-      
+
       s
     end.join(", ")
   end
-  
-  
-  
+
   def intersects?(mericope)
     return false unless mericope.is_a?(Mericope)
     return false unless (self.book == mericope.book)
-    
+
     self.ranges.each do |self_range|
       mericope.ranges.each do |other_range|
         return true if (self_range.end >= other_range.begin) and (self_range.begin <= other_range.end)
       end
     end
-    
+
     false
   end
-  
-  
-  
+
   def self.get_max_verse(book, chapter)
     id = (book * 1000000) + (chapter * 1000)
     chapter_verse_counts[id]
   end
-  
+
   def self.get_max_chapter(book)
     book_chapter_counts[book - 1]
   end
-  
-  
-  
-private
-  
-  
-  
-  def set_book(value)
-    @book = value || raise(ArgumentError, "must specify book")
-    @book_name = Mericope.book_names[@book - 1]
-    @book_chapter_count = Mericope.book_chapter_counts[@book - 1]
-  end
-  
-  
-  
+
   def self.get_first_verse(book, chapter)
     get_id(book, chapter, 1)
   end
-  
+
   def self.get_last_verse(book, chapter)
     get_id(book, chapter, get_max_verse(book, chapter))
   end
-  
+
   def self.get_next_verse(id)
     id + 1
   end
-  
+
   def self.get_start_of_next_chapter(id)
     book = get_book(id)
     chapter = get_chapter(id) + 1
     verse = 1
     get_id(book, chapter, verse)
   end
-  
-  def self.to_valid_book(book)
-    coerce_to_range(book, 1..66)
+
+private
+
+  def set_book(value)
+    @book = value || raise(ArgumentError, "must specify book")
+    @book_name = Mericope.book_names[@book - 1]
+    @book_chapter_count = Mericope.book_chapter_counts[@book - 1]
   end
-  
+
+  def self.get_max_book
+    @max_book ||= chapter_verse_counts.keys.max / 1000000
+  end
+
+  def self.to_valid_book(book)
+    coerce_to_range(book, 1..get_max_book)
+  end
+
   def self.to_valid_chapter(book, chapter)
     coerce_to_range(chapter, 1..get_max_chapter(book))
   end
-  
+
   def self.to_valid_verse(book, chapter, verse)
     coerce_to_range(verse, 1..get_max_verse(book, chapter))
   end
-  
+
   def self.coerce_to_range(number, range)
     return range.begin if number < range.begin
     return range.end if number > range.end
     number
   end
-  
+
   def self.get_id(book, chapter, verse)
     book = to_valid_book(book)
     chapter = to_valid_chapter(book, chapter)
     verse = to_valid_verse(book, chapter, verse)
-    
+
     (book * 1000000) + (chapter * 1000) + verse
   end
-  
+
   def self.get_book(id)
     id / 1000000 # the book is everything left of the least significant 6 digits
   end
-  
+
   def self.get_chapter(id)
     (id % 1000000) / 1000 # the chapter is the 3rd through 6th most significant digits
   end
-  
+
   def self.get_verse(id)
     id % 1000 # the verse is the 3 least significant digits
   end
-  
-  
-  
+
   def self.group_array_into_ranges(array)
     return [] if array.nil? or array.empty?
-    
+
     array.flatten!
     array.compact!
     array.sort!
-    
+
     ranges = []
     range_start = array.shift
     range_end = range_start
     while true
       next_value = array.shift
       break if next_value.nil?
-      
+
       if (next_value == get_next_verse(range_end)) ||
          (next_value == get_start_of_next_chapter(range_end))
         range_end = next_value
@@ -363,12 +330,10 @@ private
       end
     end
     ranges << (range_start..range_end)
-    
+
     ranges
   end
-  
-  
-  
+
   # matches the first valid Bible reference in the supplied string
   def self.match_one(text)
     match_all(text) do |attributes|
@@ -376,30 +341,28 @@ private
     end
     nil
   end
-  
-  
-  
+
   # matches all valid Bible references in the supplied string
   def self.match_all(text)
     text.scan(Mericope::MERICOPE_PATTERN) do
       match = Regexp.last_match
-      
+
       book = recognize_book(match[1])
       next unless book
-      
+
       ranges = parse_reference(book, match[2])
       next if ranges.empty?
-      
+
       attributes = {
         :original_string => match.to_s,
         :book => book,
         :ranges => ranges
       }
-      
+
       yield attributes, match
     end
   end
-  
+
   def self.recognize_book(book)
     book = book.to_s.downcase
     book_name_regexes.each do |book_regex|
@@ -407,18 +370,18 @@ private
     end
     nil
   end
-  
+
   def self.parse_reference(book, reference)
     reference = normalize_reference(reference)
     parse_ranges(book, reference.split(/[,;]/))
   end
-  
+
   def self.normalize_reference(reference)
     reference = reference.to_s
     NORMALIZATIONS.each { |(regex, replacement)| reference.gsub!(regex, replacement) }
     reference
   end
-  
+
   def self.parse_ranges(book, ranges)
     recent_chapter = nil # e.g. in 12:1-8, remember that 12 is the chapter when we parse the 8
     recent_chapter = 1 if !book_has_chapters?(book)
@@ -427,14 +390,14 @@ private
       range << range[0] if (range.length < 2) # treat 12:4 as 12:4-12:4
       lower_chapter_verse = range[0].split(':').map(&:to_i) # parse "3:28" to [3,28]
       upper_chapter_verse = range[1].split(':').map(&:to_i) # parse "3:28" to [3,28]
-      
+
       # treat Mark 3-1 as Mark 3-3 and, eventually, Mark 3:1-35
       if (lower_chapter_verse.length == 1) &&
          (upper_chapter_verse.length == 1) &&
          (upper_chapter_verse[0] < lower_chapter_verse[0])
         upper_chapter_verse = lower_chapter_verse.dup
       end
-      
+
       # make sure the low end of the range and the high end of the range
       # are composed of arrays with two appropriate values: [chapter, verse]
       chapter_range = false
@@ -450,7 +413,7 @@ private
         lower_chapter_verse[0] = Mericope.to_valid_chapter(book, lower_chapter_verse[0])
       end
       lower_chapter_verse[1] = Mericope.to_valid_verse(book, *lower_chapter_verse)
-      
+
       if upper_chapter_verse.length < 2
         if chapter_range
           upper_chapter_verse[0] = Mericope.to_valid_chapter(book, upper_chapter_verse[0])
@@ -462,17 +425,15 @@ private
         upper_chapter_verse[0] = Mericope.to_valid_chapter(book, upper_chapter_verse[0])
       end
       upper_chapter_verse[1] = Mericope.to_valid_verse(book, *upper_chapter_verse)
-      
+
       recent_chapter = upper_chapter_verse[0] # remember the last chapter
-      
+
       Range.new(
         Mericope.get_id(book, *lower_chapter_verse),
         Mericope.get_id(book, *upper_chapter_verse))
     end
   end
-  
-  
-  
+
   def self.load_chapter_verse_count_books
     path = File.expand_path(File.dirname(__FILE__) + "/../data/chapter_verse_count.txt")
     [].tap do |data|
@@ -485,16 +446,14 @@ private
       end
     end
   end
-  
-  
-  
+
   def self.load_book_abbreviations
     path = File.expand_path(File.dirname(__FILE__) + "/../data/book_abbreviations.txt")
     book_abbreviations = []
     File.open(path) do |file|
       file.each do |text|
         unless text.start_with?("#") # skip comments
-          
+
           # the file contains tab-separated values.
           # the first value is the ordinal of the book, subsequent values
           # represent abbreviations and misspellings that should be recognized
@@ -506,27 +465,19 @@ private
     end
     Hash[book_abbreviations]
   end
-  
-  
-  
+
   def self.chapter_verse_count_books
     @chapter_verse_count_books ||= load_chapter_verse_count_books
   end
 
-
-
   def self.chapter_verse_counts
     @chapter_verse_counts ||= Hash[chapter_verse_count_books.map{ |r| [r[0], r[1]] }]
   end
-  
-  
-  
+
   def self.book_abbreviations
     @book_abbreviations ||= load_book_abbreviations
   end
-  
-  
-  
+
   def self.book_chapter_counts
     @book_chapter_counts ||= chapter_verse_count_books.
       # Group by book
@@ -534,14 +485,13 @@ private
       # Take the highest chapter number of each book
       map{ |book, grp| grp.last.last }
   end
-  
-  
-  BOOK_PATTERN = /\b(?:(?:1|2|3|i+|first|second|third|1st|2nd|3rd) )?(?:\w+| of )\b/
-  
+
+  BOOK_PATTERN = /\b(?:(?:1|2|3|4|i+|first|second|third|fourth|1st|2nd|3rd|4th|words of) )?(?:\w+| of )\b/i
+
   REFERENCE_PATTERN = '(?:\s*\d{1,3})(?:\s*[:\"\.]\s*\d{1,3}[ab]?(?:\s*[,;]\s*(?:\d{1,3}[:\"\.])?\s*\d{1,3}[ab]?)*)?(?:\s*[-–—]\s*(?:\d{1,3}\s*[:\"\.])?(?:\d{1,3}[ab]?)(?:\s*[,;]\s*(?:\d{1,3}\s*[:\"\.])?\s*\d{1,3}[ab]?)*)*'
-  
+
   MERICOPE_PATTERN = /(#{BOOK_PATTERN})\.? (#{REFERENCE_PATTERN})/i
-  
+
   NORMALIZATIONS = [
     [/(\d+)[".](\d+)/, '\1:\2'], # 12"5 and 12.5 -> 12:5
     [/[–—]/,           '-'],     # convert em dash and en dash to -
