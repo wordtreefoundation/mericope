@@ -14,11 +14,11 @@ Gem::Specification.new do |s|
   s.summary      = "Mericope is a gem for parsing Book of Mormon references."
   s.description  = "It recognizes common abbreviations of the books of the Book of Mormon and a variety of ways of denoting ranges of chapters and verses. Based on Pericope."
                    
-  s.add_dependency "activesupport"
+  s.add_dependency "activesupport", "~> 4.0"
   
-  s.add_development_dependency "rake"
-  s.add_development_dependency "turn"
-  s.add_development_dependency "pry"
+  s.add_development_dependency "rake", "~> 10.4"
+  s.add_development_dependency "turn", "~> 0.9"
+  s.add_development_dependency "pry",  "~> 0.10"
                            
   s.files        = Dir.glob("{bin,data,lib}/**/*") + %w(README.mdown)
   s.executables  = ['mericope']
