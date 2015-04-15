@@ -1,7 +1,7 @@
-require 'pericope'
+require 'mericope'
 require 'cli/base'
 
-class Pericope
+class Mericope
   class CLI
     
     
@@ -27,6 +27,7 @@ class Pericope
 Glossary
 
   pericope        A Bible reference (e.g. Romans 3:6-11)
+  mericope        A Mormon Pericope
   verse ID        An integer that uniquely identifies a Bible verse      
 
       HELP
@@ -36,8 +37,8 @@ Glossary
     
     def normalize
       begin
-        pericope = Pericope.new(input)
-        print pericope.to_s
+        mericope = Mericope.new(input)
+        print mericope.to_s
       rescue
         print $!.to_s
       end
@@ -47,8 +48,8 @@ Glossary
     
     def parse
       begin
-        pericope = Pericope.new(input)
-        print pericope.to_a.join("\n")
+        mericope = Mericope.new(input)
+        print mericope.to_a.join("\n")
       rescue
         print $!.to_s
       end
@@ -58,7 +59,7 @@ Glossary
     
     def substitute
       begin
-        print Pericope.sub(input)
+        print Mericope.sub(input)
       rescue
         print $!.to_s
       end
@@ -68,7 +69,7 @@ Glossary
     
     def reverse_substitute
       begin
-        print Pericope.rsub(input)
+        print Mericope.rsub(input)
       rescue
         print $!.to_s
       end
@@ -81,15 +82,15 @@ Glossary
 
 Usage
 
-  pericope [Command] [Input]
+  mericope [Command] [Input]
 
 Commands
 
-  help                Prints more information about pericope
-  normalize           Accepts a pericope and returns a properly-formatted pericope
-  parse               Accepts a pericope and returns a list of verse IDs
-  substitute          Accepts a block of text and replaces all pericopes in the text with verse IDs
-  reverse-substitute  Accepts a block of text and replaces collections of verse IDs with pericopes
+  help                Prints more information about mericope
+  normalize           Accepts a mericope and returns a properly-formatted mericope
+  parse               Accepts a mericope and returns a list of verse IDs
+  substitute          Accepts a block of text and replaces all mericopes in the text with verse IDs
+  reverse-substitute  Accepts a block of text and replaces collections of verse IDs with mericopes
   usage               Prints this message
 
       USAGE

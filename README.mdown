@@ -1,48 +1,48 @@
-# Pericope
+# Mericope
 
-Pericope is a gem for parsing Bible references (and in this repo, modified for Book of Mormon references as well).
+Mericope is a gem for parsing Book of Mormon references (i.e. Mormon Pericopes). It's based on Pericope, a gem for parsing Bible references.
 
-It recognizes common abbreviations and misspellings for names of the books of the Bible and a variety of ways of denoting ranges of chapters and verses. It can parse pericopes singly or out of a block of text. It's useful for comparing two pericopes for intersection and normalizing them into a well-formatted string.
+It recognizes common abbreviations and misspellings for names of the books of the Bible and a variety of ways of denoting ranges of chapters and verses. It can parse mericopes singly or out of a block of text. It's useful for comparing two mericopes for intersection and normalizing them into a well-formatted string.
 
 ## Examples
 
 ##### Recognize common abbreviations and misspellings for names of the books of the Bible
 
 ```ruby
-  Pericope.new("ps 118:17").to_s # => Psalm 118:17
-  Pericope.new("jas 3:1-5").to_s # => James 3:1-5
-  Pericope.new("1 ne 12:4").to_s  # => 1 Nephi 12:4
+  Mericope.new("ps 118:17").to_s # => Psalm 118:17
+  Mericope.new("jas 3:1-5").to_s # => James 3:1-5
+  Mericope.new("1 ne 12:4").to_s  # => 1 Nephi 12:4
 ```
 
-##### Compare two pericopes to see if they intersect
+##### Compare two mericopes to see if they intersect
 
 ```ruby
-  a = Pericope.new("Mark 13:1-6")
-  b = Pericope.new("Mark 13:5")
-  c = Pericope.new("Mark 13:6, 7")
+  a = Mericope.new("Mark 13:1-6")
+  b = Mericope.new("Mark 13:5")
+  c = Mericope.new("Mark 13:6, 7")
   
   a.intersects?(b) # => true
   a.intersects?(c) # => true
   b.intersects?(c) # => false
 ```
 
-##### Parse pericopes out of a block of text
+##### Parse mericopes out of a block of text
 
 ```ruby
   text = <<-TEXT
   If then, the Word is so significant, great important attaches to its exact form. It has the form of a promise as in Isaiah 43:1: "Do not fear, for I have redeemed you; I have called you by name, you are mine," or as in Luke 2:10-11, "Do not be afraid..to you is born this day...a Savior." (Bayer, p51)
   TEXT
   
-  Pericope.parse(text) # => [Isaiah 43:1, Luke 2:10-11]
+  Mericope.parse(text) # => [Isaiah 43:1, Luke 2:10-11]
   
-  Pericope.split(text) # => ["  If then, the Word is so significant, great important attaches to its exact form. It has the form of a promise as in ", Isaiah 43:1, ": \"Do not fear, for I have redeemed you; I have called you by name, you are mine,\" or as in ", Luke 2:10-11, ", \"Do not be afraid..to you is born this day...a Savior.\" (Bayer, p51)\n"]
+  Mericope.split(text) # => ["  If then, the Word is so significant, great important attaches to its exact form. It has the form of a promise as in ", Isaiah 43:1, ": \"Do not fear, for I have redeemed you; I have called you by name, you are mine,\" or as in ", Luke 2:10-11, ", \"Do not be afraid..to you is born this day...a Savior.\" (Bayer, p51)\n"]
 ```
 
-##### Converts pericopes into arrays of verses and reconstructs them from arrays of verses
+##### Converts mericopes into arrays of verses and reconstructs them from arrays of verses
 
 ```ruby
-  array = Pericope.new("gen 1:1-3").to_a # => [1001001, 1001002, 1001003]
-  Pericope.new(array) # => Genesis 1:1-3
+  array = Mericope.new("gen 1:1-3").to_a # => [1001001, 1001002, 1001003]
+  Mericope.new(array) # => Genesis 1:1-3
 ```
 
 
@@ -55,7 +55,7 @@ It recognizes common abbreviations and misspellings for names of the books of th
 ##### 0.6.0
 
  - Removed the `index` attribute
- - Deprecated the `pattern` argument to the method `Pericope.split(text, pattern=nil)` (it will be removed in 0.7.0)
+ - Deprecated the `pattern` argument to the method `Mericope.split(text, pattern=nil)` (it will be removed in 0.7.0)
  - Improved performance by 2x
  - Added this README
  - Fixed a bug with parsing inverted [invalid] ranges (e.g. Mark 3-1)

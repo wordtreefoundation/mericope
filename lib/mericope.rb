@@ -1,8 +1,8 @@
 # encoding: UTF-8
 
-require 'pericope/version'
+require 'mericope/version'
 
-class Pericope
+class Mericope
   attr_reader :book,
               :book_chapter_count,
               :book_name,
@@ -25,8 +25,8 @@ class Pericope
   def initialize(arg)
     case arg
     when String
-      attributes = Pericope.match_one(arg)
-      raise "no pericope found in #{arg} (#{arg.class})" if attributes.nil?
+      attributes = Mericope.match_one(arg)
+      raise "no mericope found in #{arg} (#{arg.class})" if attributes.nil?
       
       @original_string = attributes[:original_string]
       set_book attributes[:book]
@@ -34,8 +34,8 @@ class Pericope
       
     when Array
       arg = arg.map(&:to_i)
-      set_book Pericope.get_book(arg.first)
-      @ranges = Pericope.group_array_into_ranges(arg)
+      set_book Mericope.get_book(arg.first)
+      @ranges = Mericope.group_array_into_ranges(arg)
       
     else
       attributes = arg
@@ -58,11 +58,11 @@ class Pericope
   
   
   
-  # Differs from Pericope.new in that it won't raise an exception
-  # if text does not contain a pericope but will return nil instead.
+  # Differs from Mericope.new in that it won't raise an exception
+  # if text does not contain a mericope but will return nil instead.
   def self.parse_one(text)
-    parse(text) do |pericope|
-      return pericope
+    parse(text) do |mericope|
+      return mericope
     end
     nil
   end
@@ -70,22 +70,22 @@ class Pericope
   
   
   def self.parse(text)
-    pericopes = []
+    mericopes = []
     match_all(text) do |attributes|
-      pericope = Pericope.new(attributes)
+      mericope = Mericope.new(attributes)
       if block_given?
-        yield pericope
+        yield mericope
       else
-        pericopes << pericope
+        mericopes << mericope
       end
     end
-    block_given? ? text : pericopes
+    block_given? ? text : mericopes
   end
   
   
   
   def self.split(text, pattern=nil)
-    puts "DEPRECATION NOTICE: split will no longer accept a 'pattern' argument in Pericope 0.7.0" if pattern
+    puts "DEPRECATION NOTICE: split will no longer accept a 'pattern' argument in Mericope 0.7.0" if pattern
     segments = []
     start = 0
     
@@ -97,9 +97,9 @@ class Pericope
         yield pretext if block_given?
       end
       
-      pericope = Pericope.new(attributes)
-      segments << pericope
-      yield pericope if block_given?
+      mericope = Mericope.new(attributes)
+      segments << mericope
+      yield mericope if block_given?
       
       start = match.end(0)
     end
@@ -117,7 +117,7 @@ class Pericope
   def self.___split_segments_by_pattern(segments, pattern)
     segments2 = []
     segments.each do |segment|
-      if segment.is_a? Pericope
+      if segment.is_a? Mericope
         segments2 << segment
       else
         segments2.concat(segment.split(pattern))
@@ -129,18 +129,18 @@ class Pericope
   
   
   def self.extract(text)
-    puts "DEPRECATION NOTICE: the 'extract' method will be removed in Pericope 0.7.0"
+    puts "DEPRECATION NOTICE: the 'extract' method will be removed in Mericope 0.7.0"
     segments = split(text)
     text = ""
-    pericopes = []
+    mericopes = []
     segments.each do |segment|
       if segment.is_a?(String)
         text << segment
       else
-        pericopes << segment
+        mericopes << segment
       end
     end
-    {:text => text, :pericopes => pericopes}
+    {:text => text, :mericopes => mericopes}
   end
   
   
@@ -161,7 +161,7 @@ class Pericope
   def self.rsub(text)
     text.gsub(/\{\{(\d{7,8} ?)+\}\}/) do |match|
       ids = match[2...-2].split.collect(&:to_i)
-      Pericope.new(ids).to_s
+      Mericope.new(ids).to_s
     end
   end
   
@@ -174,7 +174,7 @@ class Pericope
   
   
   def report
-    puts "DEPRECATION NOTICE: the 'report' method will be removed in Pericope 0.7.0"
+    puts "DEPRECATION NOTICE: the 'report' method will be removed in Mericope 0.7.0"
     "  #{self.original_string} => #{self}"
   end
   
@@ -184,18 +184,18 @@ class Pericope
     # one range per chapter
     chapter_ranges = []
     ranges.each do |range|
-      min_chapter = Pericope.get_chapter(range.begin)
-      max_chapter = Pericope.get_chapter(range.end)
+      min_chapter = Mericope.get_chapter(range.begin)
+      max_chapter = Mericope.get_chapter(range.end)
       if min_chapter == max_chapter
         chapter_ranges << range
       else
-        chapter_ranges << Range.new(range.begin, Pericope.get_last_verse(book, min_chapter))
+        chapter_ranges << Range.new(range.begin, Mericope.get_last_verse(book, min_chapter))
         for chapter in (min_chapter+1)...max_chapter
           chapter_ranges << Range.new(
-            Pericope.get_first_verse(book, chapter),
-            Pericope.get_last_verse(book, chapter))
+            Mericope.get_first_verse(book, chapter),
+            Mericope.get_last_verse(book, chapter))
         end
-        chapter_ranges << Range.new(Pericope.get_first_verse(book, max_chapter), range.end)
+        chapter_ranges << Range.new(Mericope.get_first_verse(book, max_chapter), range.end)
       end
     end
     
@@ -208,13 +208,13 @@ class Pericope
     recent_chapter = nil # e.g. in 12:1-8, remember that 12 is the chapter when we parse the 8
     recent_chapter = 1 unless book_has_chapters?
     ranges.map do |range|
-      min_chapter = Pericope.get_chapter(range.begin)
-      min_verse = Pericope.get_verse(range.begin)
-      max_chapter = Pericope.get_chapter(range.end)
-      max_verse = Pericope.get_verse(range.end)
+      min_chapter = Mericope.get_chapter(range.begin)
+      min_verse = Mericope.get_verse(range.begin)
+      max_chapter = Mericope.get_chapter(range.end)
+      max_verse = Mericope.get_verse(range.end)
       s = ""
       
-      if min_verse == 1 and max_verse >= Pericope.get_max_verse(book, max_chapter)
+      if min_verse == 1 and max_verse >= Mericope.get_max_verse(book, max_chapter)
         s << min_chapter.to_s
         s << "-#{max_chapter}" if max_chapter > min_chapter
       else
@@ -243,12 +243,12 @@ class Pericope
   
   
   
-  def intersects?(pericope)
-    return false unless pericope.is_a?(Pericope)
-    return false unless (self.book == pericope.book)
+  def intersects?(mericope)
+    return false unless mericope.is_a?(Mericope)
+    return false unless (self.book == mericope.book)
     
     self.ranges.each do |self_range|
-      pericope.ranges.each do |other_range|
+      mericope.ranges.each do |other_range|
         return true if (self_range.end >= other_range.begin) and (self_range.begin <= other_range.end)
       end
     end
@@ -275,8 +275,8 @@ private
   
   def set_book(value)
     @book = value || raise(ArgumentError, "must specify book")
-    @book_name = Pericope.book_names[@book - 1]
-    @book_chapter_count = Pericope.book_chapter_counts[@book - 1]
+    @book_name = Mericope.book_names[@book - 1]
+    @book_chapter_count = Mericope.book_chapter_counts[@book - 1]
   end
   
   
@@ -381,7 +381,7 @@ private
   
   # matches all valid Bible references in the supplied string
   def self.match_all(text)
-    text.scan(Pericope::PERICOPE_PATTERN) do
+    text.scan(Mericope::MERICOPE_PATTERN) do
       match = Regexp.last_match
       
       book = recognize_book(match[1])
@@ -442,32 +442,32 @@ private
         if recent_chapter
           lower_chapter_verse.unshift recent_chapter # e.g. parsing 11 in 12:1-8,11 => remember that 12 is the chapter
         else
-          lower_chapter_verse[0] = Pericope.to_valid_chapter(book, lower_chapter_verse[0])
+          lower_chapter_verse[0] = Mericope.to_valid_chapter(book, lower_chapter_verse[0])
           lower_chapter_verse << 1 # no verse specified; this is a range of chapters, start with verse 1
           chapter_range = true
         end
       else
-        lower_chapter_verse[0] = Pericope.to_valid_chapter(book, lower_chapter_verse[0])
+        lower_chapter_verse[0] = Mericope.to_valid_chapter(book, lower_chapter_verse[0])
       end
-      lower_chapter_verse[1] = Pericope.to_valid_verse(book, *lower_chapter_verse)
+      lower_chapter_verse[1] = Mericope.to_valid_verse(book, *lower_chapter_verse)
       
       if upper_chapter_verse.length < 2
         if chapter_range
-          upper_chapter_verse[0] = Pericope.to_valid_chapter(book, upper_chapter_verse[0])
-          upper_chapter_verse << Pericope.get_max_verse(book, upper_chapter_verse[0]) # this is a range of chapters, end with the last verse
+          upper_chapter_verse[0] = Mericope.to_valid_chapter(book, upper_chapter_verse[0])
+          upper_chapter_verse << Mericope.get_max_verse(book, upper_chapter_verse[0]) # this is a range of chapters, end with the last verse
         else
           upper_chapter_verse.unshift lower_chapter_verse[0] # e.g. parsing 8 in 12:1-8 => remember that 12 is the chapter
         end
       else
-        upper_chapter_verse[0] = Pericope.to_valid_chapter(book, upper_chapter_verse[0])
+        upper_chapter_verse[0] = Mericope.to_valid_chapter(book, upper_chapter_verse[0])
       end
-      upper_chapter_verse[1] = Pericope.to_valid_verse(book, *upper_chapter_verse)
+      upper_chapter_verse[1] = Mericope.to_valid_verse(book, *upper_chapter_verse)
       
       recent_chapter = upper_chapter_verse[0] # remember the last chapter
       
       Range.new(
-        Pericope.get_id(book, *lower_chapter_verse),
-        Pericope.get_id(book, *upper_chapter_verse))
+        Mericope.get_id(book, *lower_chapter_verse),
+        Mericope.get_id(book, *upper_chapter_verse))
     end
   end
   
@@ -540,7 +540,7 @@ private
   
   REFERENCE_PATTERN = '(?:\s*\d{1,3})(?:\s*[:\"\.]\s*\d{1,3}[ab]?(?:\s*[,;]\s*(?:\d{1,3}[:\"\.])?\s*\d{1,3}[ab]?)*)?(?:\s*[-–—]\s*(?:\d{1,3}\s*[:\"\.])?(?:\d{1,3}[ab]?)(?:\s*[,;]\s*(?:\d{1,3}\s*[:\"\.])?\s*\d{1,3}[ab]?)*)*'
   
-  PERICOPE_PATTERN = /(#{BOOK_PATTERN})\.? (#{REFERENCE_PATTERN})/i
+  MERICOPE_PATTERN = /(#{BOOK_PATTERN})\.? (#{REFERENCE_PATTERN})/i
   
   NORMALIZATIONS = [
     [/(\d+)[".](\d+)/, '\1:\2'], # 12"5 and 12.5 -> 12:5
