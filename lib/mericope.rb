@@ -44,11 +44,11 @@ class Mericope
   end
 
   def self.book_has_chapters?(book)
-    book_chapter_counts[book - 1] > 1
+    book_chapter_counts[book - 1] >= 1
   end
 
   def book_has_chapters?
-    book_chapter_count > 1
+    book_chapter_count >= 1
   end
 
   # Differs from Mericope.new in that it won't raise an exception

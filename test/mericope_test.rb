@@ -4,25 +4,19 @@ require 'test_helper'
 require 'mericope'
 
 class MericopeTest < ActiveSupport::TestCase
-  
-  
-  
+
   test "get_max_verse" do
     assert_equal 29, Mericope.get_max_verse(1, 9)
     assert_equal 26, Mericope.get_max_verse(1, 50)
   end
-  
-  
-  
+
   test "parsing a mericope of just chapters" do
     mericope = Mericope.new('ps 1-8')
     assert_equal 'Psalm', mericope.book_name
     assert_equal 150, mericope.book_chapter_count
     assert_equal true, mericope.book_has_chapters?
   end
-  
-  
-  
+
   test "valid book references" do
     tests = [
       "ii samuel",
@@ -39,15 +33,11 @@ class MericopeTest < ActiveSupport::TestCase
       assert_match Mericope::BOOK_PATTERN, test
     end
   end
-  
-  
-  
+
   test "MERICOPE_PATTERN" do
     assert_equal nil, "Cross, 1" =~ Mericope::MERICOPE_PATTERN, "\"Cross, 1\" should not be matched as a mericope!"
   end
-  
-  
-  
+
   test "parsing single mericopes" do
     tests = {
       # test basic parsing
@@ -88,9 +78,7 @@ class MericopeTest < ActiveSupport::TestCase
       end
     end
   end
-  
-  
-  
+
   test "comparing mericopes" do
     tests = [
       ["exodus 12", "exodus 12:3-13", "exodus 12:5"],    # basic intersection
@@ -108,15 +96,11 @@ class MericopeTest < ActiveSupport::TestCase
       end
     end
   end
-  
-  
-  
+
   test "comparing with an invalid mericope" do
     assert_equal false, Mericope.new("mark 3-1").intersects?(Mericope.new("mark 2:1"))
   end
-  
-  
-  
+
   test "formatting mericopes" do
     tests = {
       ["jas 4:7", "james 4:7", "James 4.7", "jas 4 :7", "jas 4: 7"] => "James 4:7",     # test basic formatting
@@ -144,9 +128,7 @@ class MericopeTest < ActiveSupport::TestCase
       end
     end
   end
-  
-  
-  
+
   test "converting mericopes to arrays" do
     tests = {
       ["gen 1:1"] => [1001001],
@@ -162,9 +144,7 @@ class MericopeTest < ActiveSupport::TestCase
       end
     end
   end
-  
-  
-  
+
   test "converting arrays to mericopes" do
     tests = {
       "Genesis 1:1" => [1001001],
@@ -178,9 +158,7 @@ class MericopeTest < ActiveSupport::TestCase
       assert_equal expected_result, mericope.to_s
     end    
   end
-  
-  
-  
+
   test "splitting text with mericopes" do
     text = "Paul, rom. 12:1-4, Romans 9:7, 11, Election, Theology of Glory, Theology of the Cross, 1 Cor 15, Resurrection"
     expected_keywords = [
@@ -201,9 +179,7 @@ class MericopeTest < ActiveSupport::TestCase
     }).flatten
     assert_equal expected_keywords, keywords
   end
-  
-  
-  
+
   test "mericope extraction" do 
     text =  "2 Peter 4.1 Lorem ipsum dolor sit amet, Mark consectetur adipiscing elit 7. 1-2 Donec aliquam erat luctus
             lacinia. Cras aliquet urna sed massa viverra eget ultricies risus sodales. Maecenas aliquet felis nec
@@ -260,9 +236,7 @@ class MericopeTest < ActiveSupport::TestCase
     assert_equal expected_results, actual_results
     assert_equal expected_text, actual_text
   end
-  
-  
-  
+
   test "mericope substitution" do 
     text =  "2 Peter 3:1-2 Lorem ipsum dolor sit amet"
     expected_text = "{{61003001 61003002}} Lorem ipsum dolor sit amet"
@@ -273,9 +247,6 @@ class MericopeTest < ActiveSupport::TestCase
     actual_text = Mericope.rsub(text)
     assert_equal expected_text, actual_text
   end
-  
-  
-  
 end
 
 at_exit do
