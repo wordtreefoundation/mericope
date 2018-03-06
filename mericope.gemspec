@@ -15,12 +15,13 @@ Gem::Specification.new do |s|
 
   s.require_paths = ["lib"]
                    
-  s.add_dependency "activesupport", "~> 4.0"
+  s.add_dependency "activesupport", "~> 5.0"
   
   s.add_development_dependency "rake",   "~> 10.4"
   s.add_development_dependency "turn",   "~> 0.9"
   s.add_development_dependency "pry",    "~> 0.10"
-  s.add_development_dependency "byebug"
+  s.add_development_dependency "test-unit", "~> 1.2"
+  s.add_development_dependency "minitest", "~> 5.11"
                            
   s.files        = Dir.glob("{bin,data,lib}/**/*") + %w(README.mdown)
   s.executables  = ['mericope']
